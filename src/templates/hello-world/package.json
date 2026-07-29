@@ -1,0 +1,8 @@
+{
+  "name": "guardrail-hello-world",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Build step OK'",
+    "lint": "echo 'Lint step OK'"
+  }
+}
