@@ -120,3 +120,65 @@ export async function pushFiles(owner, repoName, files, token) {
   }
 }
 
+/**
+ * Fetch GitHub Actions workflow runs for a repository
+ * @param {string} owner - Repo owner username
+ * @param {string} repoName - Target repo name
+ * @param {string} token - GitHub PAT
+ * @returns {Promise<Array<object>>} - List of workflow run objects
+ */
+export async function getWorkflowRuns(owner, repoName, token) {
+  const url = `https://api.github.com/repos/${owner}/${repoName}/actions/runs`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getHeaders(token)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch workflow runs for ${owner}/${repoName}: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.workflow_runs || [];
+}
+
+/**
+ * Poll getWorkflowRuns until a run appears, completes, and returns the result
+ * @param {string} owner - Repo owner username
+ * @param {string} repoName - Target repo name
+ * @param {string} token - GitHub PAT
+ * @param {number} timeoutMs - Maximum poll time in milliseconds (default 60s)
+ * @param {number} pollIntervalMs - Interval between polls in milliseconds (default 5s)
+ * @returns {Promise<object>} - Completed workflow run object
+ */
+export async function pollWorkflowRuns(owner, repoName, token, timeoutMs = 60000, pollIntervalMs = 5000) {
+  const startTime = Date.now();
+  let lastLoggedStatus = null;
+
+  console.log(`[*] Waiting for GitHub Actions workflow to trigger...`);
+
+  while (Date.now() - startTime < timeoutMs) {
+    const runs = await getWorkflowRuns(owner, repoName, token);
+
+    if (runs.length > 0) {
+      const latestRun = runs[0];
+      const statusKey = `${latestRun.status}:${latestRun.conclusion || 'pending'}`;
+
+      if (statusKey !== lastLoggedStatus) {
+        console.log(`[*] Workflow Run #${latestRun.run_number} (${latestRun.name}) - Status: [${latestRun.status}] Conclusion: [${latestRun.conclusion || 'in_progress'}]`);
+        lastLoggedStatus = statusKey;
+      }
+
+      if (latestRun.status === 'completed') {
+        return latestRun;
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+
+  throw new Error(`Timed out after ${timeoutMs / 1000}s waiting for workflow run to complete.`);
+}
+
+
