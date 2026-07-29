@@ -25,14 +25,20 @@ validateEnvironment();
 
 console.log('[*] Environment validation passed.');
 
-import { createRepo, collectTemplateFiles, pushFiles, pollWorkflowRuns } from './github.js';
+import { createRepo, collectTemplateFiles, pushFiles, pollWorkflowRuns, checkRateLimit } from './github.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function main() {
+  const rateLimit = await checkRateLimit(GITHUB_TOKEN);
+  if (rateLimit) {
+    console.log(`[*] API Rate Limit Remaining: ${rateLimit.remaining}/${rateLimit.limit} (Resets at ${rateLimit.reset.toLocaleTimeString()})`);
+  }
+
   const repoName = `guardrail-${Date.now()}`;
   console.log(`[*] Generating repository: ${repoName}...`);
+
 
   const repo = await createRepo(repoName, GITHUB_TOKEN);
   console.log(`[+] Repository created successfully: ${repo.htmlUrl}`);
