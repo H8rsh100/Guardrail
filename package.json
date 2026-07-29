@@ -1,0 +1,16 @@
+{
+  "name": "guardrail",
+  "version": "1.0.0",
+  "description": "Mechanical deployment chain proof of concept - Phase A Step 1",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
