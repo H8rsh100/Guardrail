@@ -24,3 +24,19 @@ function validateEnvironment() {
 validateEnvironment();
 
 console.log('[*] Environment validation passed.');
+
+import { createRepo } from './github.js';
+
+async function main() {
+  const repoName = `guardrail-${Date.now()}`;
+  console.log(`[*] Generating repository: ${repoName}...`);
+
+  const repo = await createRepo(repoName, GITHUB_TOKEN);
+  console.log(`[+] Repository created successfully: ${repo.htmlUrl}`);
+}
+
+main().catch((err) => {
+  console.error('[!] Orchestrator error:', err.message);
+  process.exit(1);
+});
+
