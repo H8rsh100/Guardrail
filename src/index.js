@@ -25,7 +25,10 @@ validateEnvironment();
 
 console.log('[*] Environment validation passed.');
 
-import { createRepo } from './github.js';
+import { createRepo, collectTemplateFiles, pushFiles } from './github.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function main() {
   const repoName = `guardrail-${Date.now()}`;
@@ -33,7 +36,17 @@ async function main() {
 
   const repo = await createRepo(repoName, GITHUB_TOKEN);
   console.log(`[+] Repository created successfully: ${repo.htmlUrl}`);
+
+  const templateDir = path.join(__dirname, 'templates', 'hello-world');
+  console.log(`[*] Walking template directory: ${templateDir}...`);
+  const files = collectTemplateFiles(templateDir);
+  console.log(`[*] Collected ${files.length} template files.`);
+
+  console.log(`[*] Pushing template files sequentially to ${repo.owner}/${repoName}...`);
+  await pushFiles(repo.owner, repoName, files, GITHUB_TOKEN);
+  console.log(`[+] All files pushed successfully.`);
 }
+
 
 main().catch((err) => {
   console.error('[!] Orchestrator error:', err.message);
