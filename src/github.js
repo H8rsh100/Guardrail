@@ -18,6 +18,27 @@ function getHeaders(token) {
 }
 
 /**
+ * Check remaining GitHub API rate limits
+ * @param {string} token - GitHub PAT
+ * @returns {Promise<{ limit: number, remaining: number, reset: Date }>}
+ */
+export async function checkRateLimit(token) {
+  const url = 'https://api.github.com/rate_limit';
+  const response = await fetch(url, { headers: getHeaders(token) });
+  if (response.ok) {
+    const data = await response.json();
+    const core = data.resources.core;
+    return {
+      limit: core.limit,
+      remaining: core.remaining,
+      reset: new Date(core.reset * 1000)
+    };
+  }
+  return null;
+}
+
+
+/**
  * Create a new public repository on GitHub
  * @param {string} repoName - Name of the repository to create
  * @param {string} token - GitHub PAT
