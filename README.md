@@ -1,4 +1,4 @@
-# Guardrail — Phase A, Step 1
+# Guardrail - Phase A, Step 1
 
 Automated mechanical deployment chain proof-of-concept.
 
@@ -19,3 +19,7 @@ Guardrail automatically creates a target GitHub repository, pushes a pre-configu
    ```bash
    npm start
    ```
+
+## License
+
+MIT - see [LICENSE](LICENSE).
